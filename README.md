@@ -4,4 +4,4 @@ Recorded rally duration for the Volleyball Nations League final eights in 2025 a
 
 Duration is the last skill `video_time` minus the serve `video_time`. The page is published with GitHub Pages.
 
-[Year by year](year.html) places VNL 2025 beside VNL 2026, with rally duration and actions per rally, including each match.
+The same page has three tabs: an overview with 2025 and 2026 side by side, the duration detail, and each match.
