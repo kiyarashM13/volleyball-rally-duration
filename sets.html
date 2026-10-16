@@ -89,6 +89,12 @@ function sumSets(sets) {
   return { n, dur, act, skills };
 }
 function fmt(x, d) { return Number(x).toFixed(d); }
+function clock(seconds) {
+  const total = Math.round(seconds);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return m === 0 ? `${s} s` : `${m} min ${String(s).padStart(2, "0")} s`;
+}
 function stat(value, label) { return `<div><b class="num">${value}</b><span>${label}</span></div>`; }
 
 fetch("sets.json").then(r => r.json()).then(data => {
@@ -146,7 +152,7 @@ fetch("sets.json").then(r => r.json()).then(data => {
     const weak = /Slovenia–Finland|Slovenia–France/.test(match.name);
     const rows = match.sets.map(s => `<tr>
       <td>${s.set}</td><td class="num">${s.n}</td>
-      <td class="num">${fmt(s.dur / s.n, 2)}</td><td class="num">${fmt(s.dur, 0)}</td>
+      <td class="num">${fmt(s.dur / s.n, 2)}</td><td class="num">${clock(s.dur)}</td>
       <td class="num">${fmt(s.act / s.n, 2)}</td><td class="num">${s.act.toLocaleString("en-US")}</td>
     </tr>`).join("");
     const skillHead = SKILL_NAMES.map(n => `<th>${n}</th>`).join("");
@@ -162,7 +168,7 @@ fetch("sets.json").then(r => r.json()).then(data => {
       }</div>
       ${weak ? `<p class="muted">The recorded times in this match line up weakly with the action count. The action counts themselves are unchanged.</p>` : ""}
       <h3 style="margin-top:14px">Each set</h3>
-      <table><thead><tr><th>Set</th><th>Rallies</th><th>Mean duration (s)</th><th>Sum of rally times (s)</th><th>Mean actions</th><th>Total actions</th></tr></thead><tbody>${rows}</tbody></table>
+      <table><thead><tr><th>Set</th><th>Rallies</th><th>Mean duration (s)</th><th>Sum of rally times</th><th>Mean actions</th><th>Total actions</th></tr></thead><tbody>${rows}</tbody></table>
       <h3 style="margin-top:14px">Mean actions per rally, by skill</h3>
       <table><thead><tr><th>Set</th>${skillHead}</tr></thead><tbody>${skillRows}</tbody></table>`;
   }

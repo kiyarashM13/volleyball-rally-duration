@@ -93,15 +93,21 @@ const SKILL_NOTE = {
 function card(value, label) {
   return `<div class="card"><b>${value}</b><span>${label}</span></div>`;
 }
+function clock(seconds) {
+  const total = Math.round(seconds);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return m === 0 ? `${s} s` : `${m} min ${String(s).padStart(2, "0")} s`;
+}
 function bars(rows, mode) {
   const max = Math.max(...rows.map(r => mode === "time" ? r.dur : r.n));
   return rows.map(r => {
     const value = mode === "time" ? r.dur : r.n;
     const width = Math.max(4, 100 * value / max);
-    const shown = mode === "time" ? `${Math.round(r.dur).toLocaleString("en-US")} s` : `${r.n} rallies`;
+    const shown = mode === "time" ? clock(r.dur) : `${r.n} rallies`;
     const extra = mode === "time"
       ? `${r.n} rallies · ${r.setsLabel}`
-      : `${Math.round(r.dur).toLocaleString("en-US")} s · ${r.setsLabel}`;
+      : `${clock(r.dur)} · ${r.setsLabel}`;
     return `<div class="row ${r.warn ? "warn" : ""}"><div class="label">${r.title}<small>${extra}</small></div><div class="num">${shown}</div><div class="track"><i style="width:${width}%"></i></div></div>`;
   }).join("");
 }
