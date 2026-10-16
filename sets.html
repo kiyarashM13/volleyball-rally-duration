@@ -91,9 +91,11 @@ function sumSets(sets) {
 function fmt(x, d) { return Number(x).toFixed(d); }
 function clock(seconds) {
   const total = Math.round(seconds);
+  const sec = `${total.toLocaleString("en-US")} s`;
   const m = Math.floor(total / 60);
-  const s = total % 60;
-  return m === 0 ? `${s} s` : `${m} min ${String(s).padStart(2, "0")} s`;
+  if (m === 0) return sec;
+  const rest = String(total % 60).padStart(2, "0");
+  return `${sec} (${m} min ${rest} s)`;
 }
 function stat(value, label) { return `<div><b class="num">${value}</b><span>${label}</span></div>`; }
 
