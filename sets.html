@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Rally duration by tournament</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; font-family: "Segoe UI", Calibri, sans-serif; background: #f4f1ea; color: #1c2430; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 18px; }
+  header { background: #173528; color: #f6f1e6; border-radius: 24px; padding: 28px; }
+  header p.kicker { margin: 0; font-size: 12px; letter-spacing: .04em; color: #d7c49a; }
+  h1 { margin: 8px 0 0; font-size: 34px; font-weight: 650; }
+  header .lead, header a.back { margin: 12px 0 0; max-width: 46rem; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.82); }
+  header a { color: #d7c49a; }
+  .tabs, .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tabs a, .choices button, .match button {
+    border: 1px solid #c9d0c4; background: #fff; color: #173528; border-radius: 999px;
+    padding: 8px 14px; font-family: inherit; font-size: 14px; cursor: pointer; text-decoration: none;
+  }
+  .tabs a.active, .choices button.active, .match button.active { background: #173528; color: #f6f1e6; border-color: #173528; }
+  section { background: rgba(255,255,255,.86); border: 1px solid rgba(29,79,145,.15); border-radius: 18px; padding: 16px 18px; }
+  section p { margin: 0 0 8px; font-size: 15px; line-height: 1.7; }
+  section p:last-child { margin-bottom: 0; }
+  .muted { color: #5e6770; }
+  h2 { margin: 0 0 10px; font-size: 18px; color: #173528; }
+  h3 { margin: 0 0 8px; font-size: 16px; color: #173528; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e6e1d6; }
+  th { color: #5e6770; font-weight: 600; font-size: 12px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 8px; }
+  .skills div { background: #f7f4ee; border-radius: 12px; padding: 10px 12px; }
+  .skills strong { display: block; color: #173528; margin-bottom: 2px; }
+  .skills span { font-size: 13px; color: #5e6770; line-height: 1.5; }
+  .stats { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; }
+  .stats b { display: block; font-size: 22px; color: #173528; }
+  .stats span { font-size: 12px; color: #5e6770; }
+  .warn { background: #f8efe4; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">Final eight · one tournament at a time</p>
+    <h1>Duration and actions by set</h1>
+    <p class="lead">Choose a tournament, then a match. Each set shows the recorded rally time and the actions inside those rallies.</p>
+    <p class="lead"><a href="index.html">Back to the overview</a></p>
+  </header>
+
+  <nav class="tabs">
+    <a href="index.html#overview">Overview</a>
+    <a href="index.html#duration">Duration</a>
+    <a href="index.html#matches">Matches</a>
+    <a href="index.html#method">How it was calculated</a>
+    <a class="active" href="sets.html">By tournament</a>
+  </nav>
+
+  <section>
+    <h2>What an action is</h2>
+    <p>An action is one skill row in the rally. Every rally has exactly one serve. The other skills are counted each time they appear.</p>
+    <div class="skills">
+      <div><strong>Serve</strong><span>The serve that opens the rally.</span></div>
+      <div><strong>Reception</strong><span>The receive of the serve.</span></div>
+      <div><strong>Set</strong><span>The set, the pass to an attacker.</span></div>
+      <div><strong>Attack</strong><span>An attack hit.</span></div>
+      <div><strong>Block</strong><span>A block contact.</span></div>
+      <div><strong>Dig</strong><span>A defensive dig.</span></div>
+      <div><strong>Freeball</strong><span>A free ball played over the net.</span></div>
+    </div>
+    <p class="muted" style="margin-top:10px">The sum of rally times is the recorded ball-in-play time. It is the clock in the file, not the time from the whistle to the end of the set. Sets 1 to 4 are played to 25. Set 5 is played to 15, so it has fewer rallies. The men’s VNL 2025 final eight has no fifth set.</p>
+  </section>
+
+  <div class="choices" id="tournaments"></div>
+  <section id="summary"></section>
+  <div class="choices" id="matches"></div>
+  <section id="detail"><p class="muted">Choose a match to see each set.</p></section>
+</div>
+<script>
+const SKILL_NAMES = ["Serve", "Reception", "Set", "Attack", "Block", "Dig", "Freeball"];
+function sumSets(sets) {
+  const n = sets.reduce((a, s) => a + s.n, 0);
+  const dur = sets.reduce((a, s) => a + s.dur, 0);
+  const act = sets.reduce((a, s) => a + s.act, 0);
+  const skills = SKILL_NAMES.map((_, i) => sets.reduce((a, s) => a + s.skills[i], 0));
+  return { n, dur, act, skills };
+}
+function fmt(x, d) { return Number(x).toFixed(d); }
+function stat(value, label) { return `<div><b class="num">${value}</b><span>${label}</span></div>`; }
+
+fetch("sets.json").then(r => r.json()).then(data => {
+  const tHost = document.getElementById("tournaments");
+  const mHost = document.getElementById("matches");
+  const summary = document.getElementById("summary");
+  const detail = document.getElementById("detail");
+  let group = data.groups[0];
+  let match = null;
+
+  function drawTournaments() {
+    tHost.innerHTML = "";
+    data.groups.forEach(g => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = g.name;
+      b.className = g.id === group.id ? "active" : "";
+      b.onclick = () => { group = g; match = null; draw(); };
+      tHost.appendChild(b);
+    });
+  }
+  function drawMatches() {
+    mHost.innerHTML = "";
+    group.matches.forEach((m, i) => {
+      const tot = sumSets(m.sets);
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = m.name;
+      b.className = match === m ? "active" : "";
+      b.onclick = () => { match = m; draw(); };
+      mHost.appendChild(b);
+    });
+  }
+  function drawSummary() {
+    const tot = sumSets(group.matches.flatMap(m => m.sets));
+    const cells = SKILL_NAMES.map((name, i) =>
+      `<tr><td>${name}</td><td class="num">${fmt(tot.skills[i] / tot.n, 2)}</td><td class="num">${tot.skills[i].toLocaleString("en-US")}</td></tr>`
+    ).join("");
+    summary.innerHTML = `<h2>${group.name}</h2><div class="stats">${
+      stat(tot.n.toLocaleString("en-US"), "Rallies") +
+      stat(fmt(tot.dur / tot.n, 2), "Mean duration (s)") +
+      stat(fmt(tot.act / tot.n, 2), "Mean actions") +
+      stat(group.matches.length, "Matches")
+    }</div>
+    <h3 style="margin-top:14px">Actions per rally in this tournament</h3>
+    <table><thead><tr><th>Action</th><th>Mean per rally</th><th>Total</th></tr></thead><tbody>${cells}</tbody></table>`;
+  }
+  function drawDetail() {
+    if (!match) {
+      detail.className = "";
+      detail.innerHTML = `<p class="muted">Choose a match to see each set.</p>`;
+      return;
+    }
+    const tot = sumSets(match.sets);
+    const weak = /Slovenia–Finland|Slovenia–France/.test(match.name);
+    const rows = match.sets.map(s => `<tr>
+      <td>${s.set}</td><td class="num">${s.n}</td>
+      <td class="num">${fmt(s.dur / s.n, 2)}</td><td class="num">${fmt(s.dur, 0)}</td>
+      <td class="num">${fmt(s.act / s.n, 2)}</td><td class="num">${s.act.toLocaleString("en-US")}</td>
+    </tr>`).join("");
+    const skillHead = SKILL_NAMES.map(n => `<th>${n}</th>`).join("");
+    const skillRows = match.sets.map(s => `<tr><td>${s.set}</td>${
+      s.skills.map(c => `<td class="num">${fmt(c / s.n, 2)}</td>`).join("")
+    }</tr>`).join("");
+    detail.className = weak ? "warn" : "";
+    detail.innerHTML = `<h2>${match.name}</h2>
+      <div class="stats">${
+        stat(tot.n, "Rallies") +
+        stat(fmt(tot.dur / tot.n, 2), "Mean duration (s)") +
+        stat(fmt(tot.act / tot.n, 2), "Mean actions")
+      }</div>
+      ${weak ? `<p class="muted">The recorded times in this match line up weakly with the action count. The action counts themselves are unchanged.</p>` : ""}
+      <h3 style="margin-top:14px">Each set</h3>
+      <table><thead><tr><th>Set</th><th>Rallies</th><th>Mean duration (s)</th><th>Sum of rally times (s)</th><th>Mean actions</th><th>Total actions</th></tr></thead><tbody>${rows}</tbody></table>
+      <h3 style="margin-top:14px">Mean actions per rally, by skill</h3>
+      <table><thead><tr><th>Set</th>${skillHead}</tr></thead><tbody>${skillRows}</tbody></table>`;
+  }
+  function draw() { drawTournaments(); drawSummary(); drawMatches(); drawDetail(); }
+  draw();
+}).catch(() => {
+  document.getElementById("summary").innerHTML = `<p>The tournament file did not load.</p>`;
+});
+</script>
+</body>
+</html>

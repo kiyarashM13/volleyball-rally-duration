@@ -25,7 +25,7 @@
   h1 { margin: 8px 0 0; font-size: 34px; font-weight: 650; }
   header .lead { margin: 12px 0 0; max-width: 46rem; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.82); }
   .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
-  .tabs button, .filters button {
+  .tabs button, .tabs a, .filters button {
     border: 1px solid #c9d0c4;
     background: #fff;
     color: #173528;
@@ -34,6 +34,7 @@
     font-family: inherit;
     font-size: 14px;
     cursor: pointer;
+    text-decoration: none;
   }
   .tabs button.active, .filters button.active { background: #173528; color: #f6f1e6; border-color: #173528; }
   .panel[hidden] { display: none; }
@@ -88,6 +89,7 @@
     <button type="button" data-tab="duration">Duration</button>
     <button type="button" data-tab="matches">Matches</button>
     <button type="button" data-tab="method">How it was calculated</button>
+    <a href="sets.html">By tournament</a>
   </nav>
 
   <div class="panel" id="overview">
