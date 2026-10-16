@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>At a glance</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; font-family: "Segoe UI", Calibri, sans-serif; background: #f4f1ea; color: #1c2430; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 18px; }
+  header { background: #173528; color: #f6f1e6; border-radius: 24px; padding: 28px; }
+  header p.kicker { margin: 0; font-size: 12px; letter-spacing: .04em; color: #d7c49a; }
+  h1 { margin: 8px 0 0; font-size: 32px; font-weight: 650; }
+  header .lead { margin: 12px 0 0; max-width: 46rem; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.82); }
+  header a { color: #d7c49a; }
+  .tabs, .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tabs a, .choices button {
+    border: 1px solid #c9d0c4; background: #fff; color: #173528; border-radius: 999px;
+    padding: 8px 14px; font-family: inherit; font-size: 14px; text-decoration: none; cursor: pointer;
+  }
+  .tabs a.active, .choices button.active { background: #173528; color: #f6f1e6; border-color: #173528; }
+  h2 { margin: 0; font-size: 18px; color: #173528; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .card {
+    background: #fff; border: 1px solid rgba(29,79,145,.15); border-radius: 18px;
+    min-height: 118px; padding: 16px 16px 14px;
+    box-shadow: 0 1px 0 rgba(23,53,40,.04);
+  }
+  .card b { display: block; font-size: 32px; line-height: 1.1; color: #173528; font-variant-numeric: tabular-nums; }
+  .card span { display: block; margin-top: 8px; font-size: 13px; line-height: 1.4; color: #5e6770; }
+  .card em { font-style: normal; color: #173528; }
+  section { background: rgba(255,255,255,.86); border: 1px solid rgba(29,79,145,.15); border-radius: 18px; padding: 16px 18px; }
+  section p { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: #5e6770; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; margin-top: 12px; }
+  .label { font-size: 13px; line-height: 1.35; }
+  .label small { display: block; color: #5e6770; }
+  .track { grid-column: 1 / -1; height: 10px; border-radius: 7px; background: #e7e1d6; overflow: hidden; }
+  .track i { display: block; height: 100%; border-radius: 7px; background: #1F3A5F; }
+  .row.warn .track i { background: #C47B2B; }
+  .num { font-variant-numeric: tabular-nums; text-align: right; font-size: 13px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">All 48 matches · final eights</p>
+    <h1>At a glance</h1>
+    <p class="lead">The whole sample on cards, then the longest matches and the longest sets. Women and men are both in the count. The comparisons on the other pages keep them separate.</p>
+    <p class="lead"><a href="index.html">Back to the overview</a></p>
+  </header>
+  <nav class="tabs">
+    <a href="index.html#overview">Overview</a>
+    <a href="index.html#duration">Duration</a>
+    <a href="index.html#matches">Matches</a>
+    <a href="index.html#method">How it was calculated</a>
+    <a href="sets.html">By tournament</a>
+    <a href="compare-2026.html">VNL and EC 2026</a>
+    <a class="active" href="glance.html">At a glance</a>
+  </nav>
+
+  <div class="cards" id="sample"></div>
+  <div>
+    <h2 style="margin:0 0 10px">Actions</h2>
+    <div class="cards" id="skills"></div>
+  </div>
+
+  <section>
+    <h2>Longest matches and sets</h2>
+    <p>Recorded time is the sum of rally durations in the file. A highlighted bar is the men’s European Championship bronze, Slovenia–Finland, where that clock lines up weakly with the action count.</p>
+    <div class="choices" id="mode" style="margin-top:12px">
+      <button type="button" data-mode="time" class="active">By recorded time</button>
+      <button type="button" data-mode="rallies">By number of rallies</button>
+    </div>
+  </section>
+  <div class="pair">
+    <section><h2>Matches</h2><div id="matches"></div></section>
+    <section><h2>Sets</h2><div id="sets"></div></section>
+  </div>
+</div>
+<script>
+const SKILL_NOTE = {
+  Serve: "Opens the rally. One in every rally.",
+  Reception: "The receive of the serve.",
+  Set: "The pass to an attacker.",
+  Attack: "An attack hit.",
+  Block: "A block contact.",
+  Dig: "A defensive dig.",
+  Freeball: "A free ball over the net."
+};
+function card(value, label) {
+  return `<div class="card"><b>${value}</b><span>${label}</span></div>`;
+}
+function bars(rows, mode) {
+  const max = Math.max(...rows.map(r => mode === "time" ? r.dur : r.n));
+  return rows.map(r => {
+    const value = mode === "time" ? r.dur : r.n;
+    const width = Math.max(4, 100 * value / max);
+    const shown = mode === "time" ? `${Math.round(r.dur).toLocaleString("en-US")} s` : `${r.n} rallies`;
+    const extra = mode === "time"
+      ? `${r.n} rallies · ${r.setsLabel}`
+      : `${Math.round(r.dur).toLocaleString("en-US")} s · ${r.setsLabel}`;
+    return `<div class="row ${r.warn ? "warn" : ""}"><div class="label">${r.title}<small>${extra}</small></div><div class="num">${shown}</div><div class="track"><i style="width:${width}%"></i></div></div>`;
+  }).join("");
+}
+fetch("sets.json").then(r => r.json()).then(data => {
+  const matches = [];
+  const sets = [];
+  const skills = data.skills.map(() => 0);
+  let womenR = 0, menR = 0, womenS = 0, menS = 0;
+  data.groups.forEach(g => {
+    const women = g.id.startsWith("W");
+    g.matches.forEach(m => {
+      const n = m.sets.reduce((a, s) => a + s.n, 0);
+      const dur = m.sets.reduce((a, s) => a + s.dur, 0);
+      const act = m.sets.reduce((a, s) => a + s.act, 0);
+      if (women) { womenR += n; womenS += m.sets.length; }
+      else { menR += n; menS += m.sets.length; }
+      m.sets.forEach(s => s.skills.forEach((c, i) => { skills[i] += c; }));
+      const warn = /Slovenia–Finland/.test(m.name);
+      matches.push({ title: `${g.name}<br>${m.name}`, n, dur, setsLabel: `${m.sets.length} sets`, warn });
+      m.sets.forEach(s => sets.push({
+        title: `${g.name}<br>${m.name}, set ${s.set}`,
+        n: s.n, dur: s.dur, setsLabel: `${s.act.toLocaleString("en-US")} actions`, warn
+      }));
+    });
+  });
+  const rallies = womenR + menR;
+  const setCount = womenS + menS;
+  const actionTotal = skills.reduce((a, b) => a + b, 0);
+  document.getElementById("sample").innerHTML = [
+    card("48", "Matches<br>24 women, 24 men"),
+    card(String(setCount), `Sets<br>${womenS} women, ${menS} men`),
+    card(rallies.toLocaleString("en-US"), `Rallies<br>${womenR.toLocaleString("en-US")} women, ${menR.toLocaleString("en-US")} men`),
+    card(actionTotal.toLocaleString("en-US"), `Actions<br>${(actionTotal / rallies).toFixed(2)} per rally`)
+  ].join("");
+  document.getElementById("skills").innerHTML = data.skills.map((name, i) =>
+    card(skills[i].toLocaleString("en-US"), `<em>${name}</em><br>${SKILL_NOTE[name]} ${(skills[i] / rallies).toFixed(2)} per rally.`)
+  ).join("");
+
+  let mode = "time";
+  function draw() {
+    const m = [...matches].sort((a, b) => (mode === "time" ? b.dur - a.dur : b.n - a.n)).slice(0, 8);
+    const s = [...sets].sort((a, b) => (mode === "time" ? b.dur - a.dur : b.n - a.n)).slice(0, 8);
+    document.getElementById("matches").innerHTML = bars(m, mode);
+    document.getElementById("sets").innerHTML = bars(s, mode);
+    document.querySelectorAll("#mode button").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  }
+  document.getElementById("mode").onclick = (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    mode = b.dataset.mode;
+    draw();
+  };
+  draw();
+});
+</script>
+</body>
+</html>
