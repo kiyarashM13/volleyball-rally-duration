@@ -87,6 +87,7 @@
     <button type="button" data-tab="overview">Overview</button>
     <button type="button" data-tab="duration">Duration</button>
     <button type="button" data-tab="matches">Matches</button>
+    <button type="button" data-tab="method">How it was calculated</button>
   </nav>
 
   <div class="panel" id="overview">
@@ -146,8 +147,9 @@
       <table>
         <thead>
           <tr>
-            <th>Competition</th><th>Rallies</th><th>Mean (s)</th><th>Median (s)</th>
-            <th>Correlation with touches</th><th>Ace median (s)</th><th>Serve error</th>
+            <th>Competition</th><th>Rallies</th><th>Duration, mean (s)</th><th>Median (s)</th>
+            <th>Actions, mean</th><th>Median</th>
+            <th>Correlation</th><th>Ace median (s)</th><th>Serve error</th>
           </tr>
         </thead>
         <tbody id="summary"></tbody>
@@ -159,7 +161,7 @@
       <h2 id="match-title">Matches</h2>
       <table>
         <thead>
-          <tr><th>Match</th><th>Rallies</th><th>Mean (s)</th><th>Median (s)</th><th>Correlation</th><th>Ace median (s)</th></tr>
+          <tr><th>Match</th><th>Rallies</th><th>Duration, mean (s)</th><th>Median (s)</th><th>Actions, mean</th><th>Correlation</th><th>Ace median (s)</th></tr>
         </thead>
         <tbody id="dur-matches"></tbody>
       </table>
@@ -170,8 +172,49 @@
         <thead>
           <tr><th>Competition</th><th>0–2</th><th>3–5</th><th>6–8</th><th>9–12</th><th>13–16</th><th>17–20</th><th>21+</th></tr>
         </thead>
-        <tbody id="bins"></tbody>
+      <tbody id="bins"></tbody>
+    </table>
+    </section>
+    <section>
+      <h2>Actions per rally</h2>
+      <p class="muted">The same rallies. Short is 1–4 actions, medium is 5–8, long is 9 or more. The median is 5 in every group.</p>
+      <table>
+        <thead>
+          <tr><th>Competition</th><th>Mean</th><th>Median</th><th>1–4 (%)</th><th>5–8 (%)</th><th>9 or more (%)</th></tr>
+        </thead>
+        <tbody id="action-bins"></tbody>
       </table>
+    </section>
+  </div>
+
+  <div class="panel" id="method" hidden>
+    <section>
+      <h2>Sample</h2>
+      <p>The figures come from 48 Data Volley match files and 8,195 rallies. There are six groups of eight matches: the women’s and men’s Volleyball Nations League final eights in 2025 and 2026, and the women’s and men’s European Championship final eights in 2026.</p>
+      <p>Each group runs from the quarterfinals through the final. The preliminary round is not included. Women and men are kept separate throughout.</p>
+      <p class="muted">Overview and Matches place VNL 2025 beside VNL 2026. The European Championship is on the Duration tab. This set has no European Championship 2025, so that competition is not put in the year columns.</p>
+    </section>
+    <section>
+      <h2>What counts as a rally</h2>
+      <p>One rally is one point. Rows belong to the same rally when they share the match file, the set number, and the point id.</p>
+      <p>A row counts when its skill is Serve, Reception, Set, Attack, Block, Dig, or Freeball. The rally is kept when those rows contain exactly one serve.</p>
+      <p class="muted">Rows with an empty skill are left out. Those are rotations, the point code, and other non-skill codes.</p>
+    </section>
+    <section>
+      <h2>Actions</h2>
+      <p>The action count is the number of skill rows in the rally. A short rally has 1 to 4 actions, a medium rally has 5 to 8, and a long rally has 9 or more. The median is 5 actions in every group.</p>
+    </section>
+    <section>
+      <h2>Duration</h2>
+      <p>Duration, in seconds, is the last skill <code>video_time</code> minus the serve <code>video_time</code>. The value is the clock stored in that Data Volley file.</p>
+      <p>A serve error contains only the serve row, so its duration is 0 seconds. An ace is usually about 0 to 1 second. The 0–2 second bin is therefore made up largely of rallies that end on the serve.</p>
+      <p class="muted">The correlation is the Pearson correlation between duration and the action count, calculated inside each competition. Five competitions are above 0.92. The men’s European Championship is 0.78, because the bronze match Slovenia–Finland has a correlation of 0.48. In the men’s VNL 2025, Slovenia–France is 0.76. Those two matches are highlighted on the Duration tab.</p>
+    </section>
+    <section>
+      <h2>How to read the two years</h2>
+      <p>The 2025 list and the 2026 list are two final eights in date order. A row in 2025 is a different match from the row beside it.</p>
+      <p>For the women, mean duration is 6.76 s in 2025 and 6.12 s in 2026, and mean actions are 6.59 and 6.80. For the men, duration is 5.06 s and 5.08 s, and actions are 5.41 and 5.45. The range across the eight matches is wider than the gap between the two years.</p>
+      <p class="muted">The page reports these recorded values. A difference between the years is not presented here as the effect of a rule change.</p>
     </section>
   </div>
 
@@ -243,28 +286,28 @@ tabs.addEventListener("click", (e) => {
   const b = e.target.closest("button");
   if (b) openTab(b.dataset.tab);
 });
-const start = ["overview", "duration", "matches"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "overview";
+const start = ["overview", "duration", "matches", "method"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "overview";
 openTab(start);
 window.addEventListener("hashchange", () => {
   const id = location.hash.slice(1);
-  if (["overview", "duration", "matches"].includes(id)) openTab(id);
+  if (["overview", "duration", "matches", "method"].includes(id)) openTab(id);
 });
 
 const groups = [
-  { id: "W25", name: "Women · VNL 2025", n: 1374, mean: 6.76, med: 5, corr: 0.963, ace: 0 },
-  { id: "W26", name: "Women · VNL 2026", n: 1407, mean: 6.12, med: 4, corr: 0.974, ace: 1 },
-  { id: "WEM", name: "Women · EC 2026", n: 1354, mean: 6.35, med: 4, corr: 0.974, ace: 1 },
-  { id: "M25", name: "Men · VNL 2025", n: 1320, mean: 5.06, med: 4, corr: 0.919, ace: 0 },
-  { id: "M26", name: "Men · VNL 2026", n: 1444, mean: 5.08, med: 4, corr: 0.964, ace: 0 },
-  { id: "MEM", name: "Men · EC 2026", n: 1296, mean: 5.16, med: 4, corr: 0.776, ace: 0 }
+  { id: "W25", name: "Women · VNL 2025", n: 1374, mean: 6.76, med: 5, act: 6.59, actMed: 5, short: 31.7, mid: 43.7, long: 24.7, corr: 0.963, ace: 0 },
+  { id: "W26", name: "Women · VNL 2026", n: 1407, mean: 6.12, med: 4, act: 6.80, actMed: 5, short: 33.5, mid: 40.7, long: 25.7, corr: 0.974, ace: 1 },
+  { id: "WEM", name: "Women · EC 2026", n: 1354, mean: 6.35, med: 4, act: 6.68, actMed: 5, short: 36.0, mid: 38.8, long: 25.2, corr: 0.974, ace: 1 },
+  { id: "M25", name: "Men · VNL 2025", n: 1320, mean: 5.06, med: 4, act: 5.41, actMed: 5, short: 42.7, mid: 38.6, long: 18.6, corr: 0.919, ace: 0 },
+  { id: "M26", name: "Men · VNL 2026", n: 1444, mean: 5.08, med: 4, act: 5.45, actMed: 5, short: 43.3, mid: 38.9, long: 17.9, corr: 0.964, ace: 0 },
+  { id: "MEM", name: "Men · EC 2026", n: 1296, mean: 5.16, med: 4, act: 5.39, actMed: 5, short: 40.1, mid: 42.8, long: 17.1, corr: 0.776, ace: 0 }
 ];
 const durMatches = {
-  W25: [["Quarterfinal · Italy–USA",147,6.7,5,0.98,0],["Quarterfinal · Poland–China",202,6.5,4,0.97,0],["Quarterfinal · Brazil–Germany",133,6.0,4,0.97,3],["Quarterfinal · Japan–Türkiye",203,6.3,4,0.97,3],["Semifinal · Brazil–Japan",204,8.1,7,0.96,1],["Semifinal · Poland–Italy",123,7.9,6,0.97,0],["Bronze · Poland–Japan",179,6.3,5,0.97,0.5],["Final · Italy–Brazil",183,6.2,4,0.96,0]],
-  W26: [["Quarterfinal · Brazil–Japan",183,6.6,4,0.98,1],["Quarterfinal · Italy–Netherlands",128,6.4,4,0.97,1],["Quarterfinal · Türkiye–Canada",181,5.1,4,0.96,1],["Quarterfinal · USA–China",203,5.8,4,0.97,1],["Semifinal · Brazil–Italy",215,6.4,4,0.97,1],["Semifinal · China–Türkiye",131,6.8,4,0.97,1],["Bronze · China–Italy",174,6.3,4,0.97,1],["Final · Türkiye–Brazil",192,5.9,4,0.98,1]],
-  WEM: [["Quarterfinal · Italy–Sweden",190,6.3,4,0.97,1],["Quarterfinal · Serbia–Greece",126,6.3,4,0.97,1],["Quarterfinal · Germany–Türkiye",180,6.4,4,0.98,1],["Quarterfinal · Poland–Netherlands",180,6.8,4,0.98,1],["Semifinal · Poland–Italy",175,5.7,4,0.97,1],["Semifinal · Türkiye–Serbia",134,6.1,4,0.98,1],["Bronze · Poland–Serbia",173,7.0,4,0.98,1],["Final · Türkiye–Italy",196,6.2,4,0.98,1]],
-  M25: [["Quarterfinal · Brazil–China",191,4.9,4,0.96,0],["Quarterfinal · Italy–Cuba",178,5.7,5,0.95,0],["Quarterfinal · Poland–Japan",135,4.9,4,0.97,0],["Quarterfinal · Slovenia–France",174,5.1,5,0.76,0],["Semifinal · Poland–Brazil",144,4.2,4,0.95,0],["Semifinal · Slovenia–Italy",183,4.8,4,0.96,0],["Bronze · Slovenia–Brazil",185,6.0,5,0.96,0],["Final · Poland–Italy",130,4.4,3,0.96,0]],
-  M26: [["Quarterfinal · Slovenia–Türkiye",190,5.6,4,0.96,0],["Quarterfinal · China–Japan",185,4.0,3,0.95,0.5],["Quarterfinal · Italy–USA",139,4.0,4,0.97,0],["Quarterfinal · Ukraine–Poland",181,5.7,5,0.97,0],["Semifinal · Japan–USA",209,5.4,4,0.97,0],["Semifinal · Slovenia–Poland",127,4.9,4,0.98,0],["Bronze · Slovenia–Japan",194,5.6,5,0.98,0],["Final · Poland–USA",219,5.1,5,0.97,0]],
-  MEM: [["Quarterfinal · France–Romania",128,4.4,4,0.97,0],["Quarterfinal · Germany–Poland",131,5.1,5,0.96,0],["Quarterfinal · Slovenia–Belgium",177,5.9,5,0.97,0],["Quarterfinal · Italy–Finland",214,4.7,5,0.97,0],["Semifinal · France–Finland",168,4.7,3,0.97,0],["Semifinal · Poland–Slovenia",139,4.3,3,0.97,0],["Bronze · Slovenia–Finland",149,8.6,7,0.48,3.5],["Final · Poland–France",190,3.9,3,0.96,0]]
+  W25: [["Quarterfinal · Italy–USA",147,6.7,5,6.76,0.98,0],["Quarterfinal · Poland–China",202,6.5,4,6.62,0.97,0],["Quarterfinal · Brazil–Germany",133,6.0,4,6.14,0.97,3],["Quarterfinal · Japan–Türkiye",203,6.3,4,6.24,0.97,3],["Semifinal · Brazil–Japan",204,8.1,7,6.65,0.96,1],["Semifinal · Poland–Italy",123,7.9,6,7.60,0.97,0],["Bronze · Poland–Japan",179,6.3,5,6.11,0.97,0.5],["Final · Italy–Brazil",183,6.2,4,6.89,0.96,0]],
+  W26: [["Quarterfinal · Brazil–Japan",183,6.6,4,7.23,0.98,1],["Quarterfinal · Italy–Netherlands",128,6.4,4,7.01,0.97,1],["Quarterfinal · Türkiye–Canada",181,5.1,4,5.83,0.96,1],["Quarterfinal · USA–China",203,5.8,4,6.43,0.97,1],["Semifinal · Brazil–Italy",215,6.4,4,6.96,0.97,1],["Semifinal · China–Türkiye",131,6.8,4,7.38,0.97,1],["Bronze · China–Italy",174,6.3,4,7.12,0.97,1],["Final · Türkiye–Brazil",192,5.9,4,6.65,0.98,1]],
+  WEM: [["Quarterfinal · Italy–Sweden",190,6.3,4,6.42,0.97,1],["Quarterfinal · Serbia–Greece",126,6.3,4,6.13,0.97,1],["Quarterfinal · Germany–Türkiye",180,6.4,4,7.15,0.98,1],["Quarterfinal · Poland–Netherlands",180,6.8,4,7.11,0.98,1],["Semifinal · Poland–Italy",175,5.7,4,6.20,0.97,1],["Semifinal · Türkiye–Serbia",134,6.1,4,6.31,0.98,1],["Bronze · Poland–Serbia",173,7.0,4,7.10,0.98,1],["Final · Türkiye–Italy",196,6.2,4,6.77,0.98,1]],
+  M25: [["Quarterfinal · Brazil–China",191,4.9,4,5.64,0.96,0],["Quarterfinal · Italy–Cuba",178,5.7,5,5.56,0.95,0],["Quarterfinal · Poland–Japan",135,4.9,4,5.30,0.97,0],["Quarterfinal · Slovenia–France",174,5.1,5,5.02,0.76,0],["Semifinal · Poland–Brazil",144,4.2,4,4.71,0.95,0],["Semifinal · Slovenia–Italy",183,4.8,4,5.52,0.96,0],["Bronze · Slovenia–Brazil",185,6.0,5,5.66,0.96,0],["Final · Poland–Italy",130,4.4,3,5.75,0.96,0]],
+  M26: [["Quarterfinal · Slovenia–Türkiye",190,5.6,4,5.88,0.96,0],["Quarterfinal · China–Japan",185,4.0,3,5.36,0.95,0.5],["Quarterfinal · Italy–USA",139,4.0,4,4.81,0.97,0],["Quarterfinal · Ukraine–Poland",181,5.7,5,5.41,0.97,0],["Semifinal · Japan–USA",209,5.4,4,5.76,0.97,0],["Semifinal · Slovenia–Poland",127,4.9,4,5.34,0.98,0],["Bronze · Slovenia–Japan",194,5.6,5,5.63,0.98,0],["Final · Poland–USA",219,5.1,5,5.21,0.97,0]],
+  MEM: [["Quarterfinal · France–Romania",128,4.4,4,5.05,0.97,0],["Quarterfinal · Germany–Poland",131,5.1,5,5.54,0.96,0],["Quarterfinal · Slovenia–Belgium",177,5.9,5,5.77,0.97,0],["Quarterfinal · Italy–Finland",214,4.7,5,4.86,0.97,0],["Semifinal · France–Finland",168,4.7,3,5.74,0.97,0],["Semifinal · Poland–Slovenia",139,4.3,3,5.69,0.97,0],["Bronze · Slovenia–Finland",149,8.6,7,5.79,0.48,3.5],["Final · Poland–France",190,3.9,3,4.87,0.96,0]]
 };
 const bins = {
   W25: [14.9,41.8,15.5,13.8,7.2,3.2,3.5],
@@ -275,7 +318,10 @@ const bins = {
   MEM: [26.2,40.0,16.5,10.6,3.8,1.9,1.1]
 };
 document.getElementById("summary").innerHTML = groups.map(g =>
-  `<tr class="${g.corr < 0.9 ? "weak" : ""}"><td>${g.name}</td><td class="num">${g.n.toLocaleString("en-US")}</td><td class="num">${g.mean.toFixed(2)}</td><td class="num">${g.med}</td><td class="num">${g.corr.toFixed(2)}</td><td class="num">${g.ace}</td><td>0 s</td></tr>`
+  `<tr class="${g.corr < 0.9 ? "weak" : ""}"><td>${g.name}</td><td class="num">${g.n.toLocaleString("en-US")}</td><td class="num">${g.mean.toFixed(2)}</td><td class="num">${g.med}</td><td class="num">${g.act.toFixed(2)}</td><td class="num">${g.actMed}</td><td class="num">${g.corr.toFixed(2)}</td><td class="num">${g.ace}</td><td>0 s</td></tr>`
+).join("");
+document.getElementById("action-bins").innerHTML = groups.map(g =>
+  `<tr><td>${g.name}</td><td class="num">${g.act.toFixed(2)}</td><td class="num">${g.actMed}</td><td class="num">${g.short.toFixed(1)}</td><td class="num">${g.mid.toFixed(1)}</td><td class="num">${g.long.toFixed(1)}</td></tr>`
 ).join("");
 document.getElementById("bins").innerHTML = groups.map(g =>
   `<tr><td>${g.name}</td>${bins[g.id].map(v => `<td class="num">${v.toFixed(1)}</td>`).join("")}</tr>`
@@ -286,7 +332,7 @@ function showGroup(id) {
   document.getElementById("match-title").textContent = g.name;
   filters.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.id === id));
   document.getElementById("dur-matches").innerHTML = durMatches[id].map(r =>
-    `<tr class="${r[4] < 0.9 ? "weak" : ""}"><td>${r[0]}</td><td class="num">${r[1].toLocaleString("en-US")}</td><td class="num">${r[2].toFixed(1)}</td><td class="num">${r[3]}</td><td class="num">${r[4].toFixed(2)}</td><td class="num">${r[5]}</td></tr>`
+    `<tr class="${r[5] < 0.9 ? "weak" : ""}"><td>${r[0]}</td><td class="num">${r[1].toLocaleString("en-US")}</td><td class="num">${r[2].toFixed(1)}</td><td class="num">${r[3]}</td><td class="num">${r[4].toFixed(2)}</td><td class="num">${r[5].toFixed(2)}</td><td class="num">${r[6]}</td></tr>`
   ).join("");
 }
 groups.forEach(g => {
