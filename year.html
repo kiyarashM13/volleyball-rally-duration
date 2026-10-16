@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Rally duration and actions, year by year</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", Calibri, sans-serif;
+    background: #f4f1ea;
+    color: #1c2430;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 18px; }
+  header {
+    background: #173528;
+    color: #f6f1e6;
+    border-radius: 24px;
+    padding: 28px 28px 24px;
+  }
+  header p.kicker { margin: 0; font-size: 12px; letter-spacing: .04em; color: #d7c49a; }
+  h1 { margin: 8px 0 0; font-size: 34px; font-weight: 650; }
+  header .lead { margin: 12px 0 0; max-width: 46rem; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.82); }
+  header a { color: #d7c49a; }
+  section {
+    background: rgba(255,255,255,.86);
+    border: 1px solid rgba(29,79,145,.15);
+    border-radius: 18px;
+    padding: 16px 18px;
+  }
+  section p { margin: 0 0 8px; font-size: 15px; line-height: 1.7; }
+  section p:last-child { margin-bottom: 0; }
+  .muted { color: #5e6770; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e6e1d6; }
+  th { color: #5e6770; font-weight: 600; font-size: 12px; }
+  .num { font-variant-numeric: tabular-nums; }
+  h2 { margin: 0 0 10px; font-size: 18px; color: #173528; }
+  .note { font-size: 13px; color: #5e6770; margin-top: 8px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+  td.y26, th.y26 { background: #f3f7f4; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">VNL final eight · 2025 beside 2026</p>
+    <h1>Duration and actions</h1>
+    <p class="lead">Women and men stay separate. Each year is eight matches, from the quarterfinals through the final. Rally duration is recorded video time. Actions are the skill count in the same rally.</p>
+    <p class="lead"><a href="index.html">All six competitions</a></p>
+  </header>
+
+  <section>
+    <p>An action is one skill row: serve, reception, set, attack, block, dig, or freeball. Duration is the last of those <code>video_time</code> values minus the serve <code>video_time</code>.</p>
+    <p class="muted">For the women, mean duration is 6.76 s in 2025 and 6.12 s in 2026, while mean actions are 6.59 and 6.80. For the men, duration stays at 5.06 s and 5.08 s, and actions at 5.41 and 5.45. The spread from match to match is wider than the gap between the two years.</p>
+  </section>
+
+  <div class="pair">
+    <section>
+      <h2>Women</h2>
+      <table>
+        <thead><tr><th></th><th>VNL 2025</th><th class="y26">VNL 2026</th></tr></thead>
+        <tbody>
+          <tr><td>Rallies</td><td class="num">1,374</td><td class="num y26">1,407</td></tr>
+          <tr><td>Duration, mean (s)</td><td class="num">6.76</td><td class="num y26">6.12</td></tr>
+          <tr><td>Duration, median (s)</td><td class="num">5</td><td class="num y26">4</td></tr>
+          <tr><td>Actions, mean</td><td class="num">6.59</td><td class="num y26">6.80</td></tr>
+          <tr><td>Actions, median</td><td class="num">5</td><td class="num y26">5</td></tr>
+          <tr><td>Short rallies, 1–4 actions (%)</td><td class="num">31.7</td><td class="num y26">33.5</td></tr>
+          <tr><td>Medium rallies, 5–8 actions (%)</td><td class="num">43.7</td><td class="num y26">40.7</td></tr>
+          <tr><td>Long rallies, 9 or more (%)</td><td class="num">24.7</td><td class="num y26">25.7</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section>
+      <h2>Men</h2>
+      <table>
+        <thead><tr><th></th><th>VNL 2025</th><th class="y26">VNL 2026</th></tr></thead>
+        <tbody>
+          <tr><td>Rallies</td><td class="num">1,320</td><td class="num y26">1,444</td></tr>
+          <tr><td>Duration, mean (s)</td><td class="num">5.06</td><td class="num y26">5.08</td></tr>
+          <tr><td>Duration, median (s)</td><td class="num">4</td><td class="num y26">4</td></tr>
+          <tr><td>Actions, mean</td><td class="num">5.41</td><td class="num y26">5.45</td></tr>
+          <tr><td>Actions, median</td><td class="num">5</td><td class="num y26">5</td></tr>
+          <tr><td>Short rallies, 1–4 actions (%)</td><td class="num">42.7</td><td class="num y26">43.3</td></tr>
+          <tr><td>Medium rallies, 5–8 actions (%)</td><td class="num">38.6</td><td class="num y26">38.9</td></tr>
+          <tr><td>Long rallies, 9 or more (%)</td><td class="num">18.6</td><td class="num y26">17.9</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="pair">
+    <section>
+      <h2>Women · duration bins (%)</h2>
+      <table>
+        <thead><tr><th>Seconds</th><th>VNL 2025</th><th class="y26">VNL 2026</th></tr></thead>
+        <tbody id="w-bins"></tbody>
+      </table>
+    </section>
+    <section>
+      <h2>Men · duration bins (%)</h2>
+      <table>
+        <thead><tr><th>Seconds</th><th>VNL 2025</th><th class="y26">VNL 2026</th></tr></thead>
+        <tbody id="m-bins"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <section>
+    <h2>Each match</h2>
+    <p class="muted">The two lists sit side by side in date order. A row in 2025 is a different match from the row in 2026. Mean actions per match run from 6.11 to 7.60 for the women in 2025 and from 5.83 to 7.38 in 2026. For the men the ranges are 4.71 to 5.75 and 4.81 to 5.88.</p>
+  </section>
+
+  <div class="pair" id="matches"></div>
+</div>
+<script>
+const binLabels = ["0–2", "3–5", "6–8", "9–12", "13–16", "17–20", "21+"];
+const wBins = [[14.9, 16.8], [41.8, 46.3], [15.5, 15.1], [13.8, 10.5], [7.2, 5.5], [3.2, 2.3], [3.5, 3.5]];
+const mBins = [[26.0, 26.2], [43.0, 44.5], [13.0, 12.0], [10.9, 10.0], [4.2, 3.9], [1.5, 1.7], [1.4, 1.7]];
+function binRows(pairs) {
+  return pairs.map((p, i) =>
+    `<tr><td>${binLabels[i]}</td><td class="num">${p[0].toFixed(1)}</td><td class="num y26">${p[1].toFixed(1)}</td></tr>`
+  ).join("");
+}
+document.getElementById("w-bins").innerHTML = binRows(wBins);
+document.getElementById("m-bins").innerHTML = binRows(mBins);
+
+const matches = {
+  "Women · VNL 2025": [
+    ["Quarterfinal · Italy–USA", 147, 6.75, 5, 6.76, 5],
+    ["Quarterfinal · Poland–China", 202, 6.54, 4, 6.62, 5],
+    ["Quarterfinal · Brazil–Germany", 133, 6.03, 4, 6.14, 5],
+    ["Quarterfinal · Japan–Türkiye", 203, 6.28, 4, 6.24, 5],
+    ["Semifinal · Brazil–Japan", 204, 8.12, 7, 6.65, 5],
+    ["Semifinal · Poland–Italy", 123, 7.86, 6, 7.60, 5],
+    ["Bronze · Poland–Japan", 179, 6.32, 5, 6.11, 5],
+    ["Final · Italy–Brazil", 183, 6.22, 4, 6.89, 5]
+  ],
+  "Women · VNL 2026": [
+    ["Quarterfinal · Brazil–Japan", 183, 6.55, 4, 7.23, 5],
+    ["Quarterfinal · Italy–Netherlands", 128, 6.38, 4, 7.01, 5],
+    ["Quarterfinal · Türkiye–Canada", 181, 5.14, 4, 5.83, 5],
+    ["Quarterfinal · USA–China", 203, 5.78, 4, 6.43, 5],
+    ["Semifinal · Brazil–Italy", 215, 6.35, 4, 6.96, 5],
+    ["Semifinal · China–Türkiye", 131, 6.77, 4, 7.38, 5],
+    ["Bronze · China–Italy", 174, 6.30, 4, 7.12, 5],
+    ["Final · Türkiye–Brazil", 192, 5.91, 4, 6.65, 5]
+  ],
+  "Men · VNL 2025": [
+    ["Quarterfinal · Brazil–China", 191, 4.86, 4, 5.64, 5],
+    ["Quarterfinal · Italy–Cuba", 178, 5.75, 5, 5.56, 5],
+    ["Quarterfinal · Poland–Japan", 135, 4.93, 4, 5.30, 5],
+    ["Quarterfinal · Slovenia–France", 174, 5.10, 5, 5.02, 5],
+    ["Semifinal · Poland–Brazil", 144, 4.22, 4, 4.71, 4],
+    ["Semifinal · Slovenia–Italy", 183, 4.85, 4, 5.52, 5],
+    ["Bronze · Slovenia–Brazil", 185, 6.01, 5, 5.66, 5],
+    ["Final · Poland–Italy", 130, 4.41, 3, 5.75, 5]
+  ],
+  "Men · VNL 2026": [
+    ["Quarterfinal · Slovenia–Türkiye", 190, 5.59, 4, 5.88, 5],
+    ["Quarterfinal · China–Japan", 185, 4.00, 3, 5.36, 5],
+    ["Quarterfinal · Italy–USA", 139, 4.01, 4, 4.81, 4],
+    ["Quarterfinal · Ukraine–Poland", 181, 5.72, 5, 5.41, 5],
+    ["Semifinal · Japan–USA", 209, 5.42, 4, 5.76, 5],
+    ["Semifinal · Slovenia–Poland", 127, 4.88, 4, 5.34, 5],
+    ["Bronze · Slovenia–Japan", 194, 5.57, 5, 5.63, 5],
+    ["Final · Poland–USA", 219, 5.06, 5, 5.21, 5]
+  ]
+};
+const host = document.getElementById("matches");
+Object.keys(matches).forEach(title => {
+  const sec = document.createElement("section");
+  const rows = matches[title].map(r =>
+    `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2].toFixed(2)}</td><td class="num">${r[3]}</td><td class="num">${r[4].toFixed(2)}</td><td class="num">${r[5]}</td></tr>`
+  ).join("");
+  sec.innerHTML = `<h2>${title}</h2><table><thead><tr><th>Match</th><th>Rallies</th><th>Duration, mean (s)</th><th>Median (s)</th><th>Actions, mean</th><th>Median</th></tr></thead><tbody>${rows}</tbody></table>`;
+  host.appendChild(sec);
+});
+</script>
+</body>
+</html>
