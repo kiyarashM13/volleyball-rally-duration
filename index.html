@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Rally duration</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", Calibri, sans-serif;
+    background: #f4f1ea;
+    color: #1c2430;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 18px; }
+  header {
+    background: #173528;
+    color: #f6f1e6;
+    border-radius: 24px;
+    padding: 28px 28px 24px;
+  }
+  header p.kicker { margin: 0; font-size: 12px; letter-spacing: .04em; color: #d7c49a; }
+  h1 { margin: 8px 0 0; font-size: 34px; font-weight: 650; }
+  header .lead { margin: 12px 0 0; max-width: 44rem; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.82); }
+  section {
+    background: rgba(255,255,255,.86);
+    border: 1px solid rgba(29,79,145,.15);
+    border-radius: 18px;
+    padding: 16px 18px;
+  }
+  section p { margin: 0 0 8px; font-size: 15px; line-height: 1.7; }
+  section p:last-child { margin-bottom: 0; }
+  .muted { color: #5e6770; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    border: 1px solid #c9d0c4;
+    background: #fff;
+    color: #173528;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  button.active { background: #173528; color: #f6f1e6; border-color: #173528; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e6e1d6; }
+  th { color: #5e6770; font-weight: 600; font-size: 12px; }
+  tr.weak td { background: #f8efe4; }
+  .num { font-variant-numeric: tabular-nums; }
+  h2 { margin: 0 0 10px; font-size: 18px; color: #173528; }
+  .note { font-size: 13px; color: #5e6770; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">Final eight · video_time</p>
+    <h1>Rally duration</h1>
+    <p class="lead">Volleyball Nations League 2025 and 2026, and the 2026 European Championship. Women and men are kept separate. Each group is eight matches, from the quarterfinals through the final.</p>
+  </header>
+
+  <section>
+    <p>Each competition is the final eight only, not the preliminary round.</p>
+    <p class="muted">Duration is the last skill <code>video_time</code> minus the serve <code>video_time</code>. Rows with no skill (rotations, the point code, and other non-skill codes) are left out. All 8,195 rallies are included.</p>
+    <p class="muted">In the men’s European Championship, the bronze match Slovenia–Finland has weaker timing. The correlation of duration with touch count for that whole competition is 0.78. The other five competitions are above 0.92.</p>
+  </section>
+
+  <section>
+    <h2>Six competitions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Competition</th>
+          <th>Rallies</th>
+          <th>Mean (s)</th>
+          <th>Median (s)</th>
+          <th>Correlation with touches</th>
+          <th>Ace median (s)</th>
+          <th>Serve error</th>
+        </tr>
+      </thead>
+      <tbody id="summary"></tbody>
+    </table>
+    <p class="note">A serve error lasts 0 seconds, because the only skill in that rally is the serve. A highlighted row is a match whose correlation stays below 0.90.</p>
+  </section>
+
+  <div class="filters" id="filters"></div>
+
+  <section>
+    <h2 id="match-title">Matches</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Match</th>
+          <th>Rallies</th>
+          <th>Mean (s)</th>
+          <th>Median (s)</th>
+          <th>Correlation</th>
+          <th>Ace median (s)</th>
+        </tr>
+      </thead>
+      <tbody id="matches"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Share of duration bins, percent of rallies</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Competition</th>
+          <th>0–2</th><th>3–5</th><th>6–8</th><th>9–12</th><th>13–16</th><th>17–20</th><th>21+</th>
+        </tr>
+      </thead>
+      <tbody id="bins"></tbody>
+    </table>
+  </section>
+</div>
+<script>
+const groups = [
+  { id: "W25", name: "Women · VNL 2025", n: 1374, mean: 6.76, med: 5, corr: 0.963, ace: 0 },
+  { id: "W26", name: "Women · VNL 2026", n: 1407, mean: 6.12, med: 4, corr: 0.974, ace: 1 },
+  { id: "WEM", name: "Women · EC 2026", n: 1354, mean: 6.35, med: 4, corr: 0.974, ace: 1 },
+  { id: "M25", name: "Men · VNL 2025", n: 1320, mean: 5.06, med: 4, corr: 0.919, ace: 0 },
+  { id: "M26", name: "Men · VNL 2026", n: 1444, mean: 5.08, med: 4, corr: 0.964, ace: 0 },
+  { id: "MEM", name: "Men · EC 2026", n: 1296, mean: 5.16, med: 4, corr: 0.776, ace: 0 }
+];
+const matches = {
+  W25: [
+    ["Quarterfinal · Italy–USA", 147, 6.7, 5, 0.98, 0],
+    ["Quarterfinal · Poland–China", 202, 6.5, 4, 0.97, 0],
+    ["Quarterfinal · Brazil–Germany", 133, 6.0, 4, 0.97, 3],
+    ["Quarterfinal · Japan–Türkiye", 203, 6.3, 4, 0.97, 3],
+    ["Semifinal · Brazil–Japan", 204, 8.1, 7, 0.96, 1],
+    ["Semifinal · Poland–Italy", 123, 7.9, 6, 0.97, 0],
+    ["Bronze · Poland–Japan", 179, 6.3, 5, 0.97, 0.5],
+    ["Final · Italy–Brazil", 183, 6.2, 4, 0.96, 0]
+  ],
+  W26: [
+    ["Quarterfinal · Brazil–Japan", 183, 6.6, 4, 0.98, 1],
+    ["Quarterfinal · Italy–Netherlands", 128, 6.4, 4, 0.97, 1],
+    ["Quarterfinal · Türkiye–Canada", 181, 5.1, 4, 0.96, 1],
+    ["Quarterfinal · USA–China", 203, 5.8, 4, 0.97, 1],
+    ["Semifinal · Brazil–Italy", 215, 6.4, 4, 0.97, 1],
+    ["Semifinal · China–Türkiye", 131, 6.8, 4, 0.97, 1],
+    ["Bronze · China–Italy", 174, 6.3, 4, 0.97, 1],
+    ["Final · Türkiye–Brazil", 192, 5.9, 4, 0.98, 1]
+  ],
+  WEM: [
+    ["Quarterfinal · Italy–Sweden", 190, 6.3, 4, 0.97, 1],
+    ["Quarterfinal · Serbia–Greece", 126, 6.3, 4, 0.97, 1],
+    ["Quarterfinal · Germany–Türkiye", 180, 6.4, 4, 0.98, 1],
+    ["Quarterfinal · Poland–Netherlands", 180, 6.8, 4, 0.98, 1],
+    ["Semifinal · Poland–Italy", 175, 5.7, 4, 0.97, 1],
+    ["Semifinal · Türkiye–Serbia", 134, 6.1, 4, 0.98, 1],
+    ["Bronze · Poland–Serbia", 173, 7.0, 4, 0.98, 1],
+    ["Final · Türkiye–Italy", 196, 6.2, 4, 0.98, 1]
+  ],
+  M25: [
+    ["Quarterfinal · Brazil–China", 191, 4.9, 4, 0.96, 0],
+    ["Quarterfinal · Italy–Cuba", 178, 5.7, 5, 0.95, 0],
+    ["Quarterfinal · Poland–Japan", 135, 4.9, 4, 0.97, 0],
+    ["Quarterfinal · Slovenia–France", 174, 5.1, 5, 0.76, 0],
+    ["Semifinal · Poland–Brazil", 144, 4.2, 4, 0.95, 0],
+    ["Semifinal · Slovenia–Italy", 183, 4.8, 4, 0.96, 0],
+    ["Bronze · Slovenia–Brazil", 185, 6.0, 5, 0.96, 0],
+    ["Final · Poland–Italy", 130, 4.4, 3, 0.96, 0]
+  ],
+  M26: [
+    ["Quarterfinal · Slovenia–Türkiye", 190, 5.6, 4, 0.96, 0],
+    ["Quarterfinal · China–Japan", 185, 4.0, 3, 0.95, 0.5],
+    ["Quarterfinal · Italy–USA", 139, 4.0, 4, 0.97, 0],
+    ["Quarterfinal · Ukraine–Poland", 181, 5.7, 5, 0.97, 0],
+    ["Semifinal · Japan–USA", 209, 5.4, 4, 0.97, 0],
+    ["Semifinal · Slovenia–Poland", 127, 4.9, 4, 0.98, 0],
+    ["Bronze · Slovenia–Japan", 194, 5.6, 5, 0.98, 0],
+    ["Final · Poland–USA", 219, 5.1, 5, 0.97, 0]
+  ],
+  MEM: [
+    ["Quarterfinal · France–Romania", 128, 4.4, 4, 0.97, 0],
+    ["Quarterfinal · Germany–Poland", 131, 5.1, 5, 0.96, 0],
+    ["Quarterfinal · Slovenia–Belgium", 177, 5.9, 5, 0.97, 0],
+    ["Quarterfinal · Italy–Finland", 214, 4.7, 5, 0.97, 0],
+    ["Semifinal · France–Finland", 168, 4.7, 3, 0.97, 0],
+    ["Semifinal · Poland–Slovenia", 139, 4.3, 3, 0.97, 0],
+    ["Bronze · Slovenia–Finland", 149, 8.6, 7, 0.48, 3.5],
+    ["Final · Poland–France", 190, 3.9, 3, 0.96, 0]
+  ]
+};
+const bins = {
+  W25: [14.9, 41.8, 15.5, 13.8, 7.2, 3.2, 3.5],
+  W26: [16.8, 46.3, 15.1, 10.5, 5.5, 2.3, 3.5],
+  WEM: [17.7, 43.5, 13.7, 12.4, 6.7, 2.7, 3.2],
+  M25: [26.0, 43.0, 13.0, 10.9, 4.2, 1.5, 1.4],
+  M26: [26.2, 44.5, 12.0, 10.0, 3.9, 1.7, 1.7],
+  MEM: [26.2, 40.0, 16.5, 10.6, 3.8, 1.9, 1.1]
+};
+document.getElementById("summary").innerHTML = groups.map(g =>
+  `<tr class="${g.corr < 0.9 ? "weak" : ""}"><td>${g.name}</td><td class="num">${g.n.toLocaleString("en-US")}</td><td class="num">${g.mean.toFixed(2)}</td><td class="num">${g.med}</td><td class="num">${g.corr.toFixed(2)}</td><td class="num">${g.ace}</td><td>0 s</td></tr>`
+).join("");
+document.getElementById("bins").innerHTML = groups.map(g =>
+  `<tr><td>${g.name}</td>${bins[g.id].map(v => `<td class="num">${v.toFixed(1)}</td>`).join("")}</tr>`
+).join("");
+const filters = document.getElementById("filters");
+function show(id) {
+  const g = groups.find(x => x.id === id);
+  document.getElementById("match-title").textContent = g.name;
+  document.querySelectorAll("#filters button").forEach(b => b.classList.toggle("active", b.dataset.id === id));
+  document.getElementById("matches").innerHTML = matches[id].map(r =>
+    `<tr class="${r[4] < 0.9 ? "weak" : ""}"><td>${r[0]}</td><td class="num">${r[1].toLocaleString("en-US")}</td><td class="num">${r[2].toFixed(1)}</td><td class="num">${r[3]}</td><td class="num">${r[4].toFixed(2)}</td><td class="num">${r[5]}</td></tr>`
+  ).join("");
+}
+groups.forEach(g => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.dataset.id = g.id;
+  b.textContent = g.name;
+  b.onclick = () => show(g.id);
+  filters.appendChild(b);
+});
+show("W25");
+</script>
+</body>
+</html>
