@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>VNL 2026 and European Championship 2026</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; font-family: "Segoe UI", Calibri, sans-serif; background: #f4f1ea; color: #1c2430; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 18px; }
+  header { background: #173528; color: #f6f1e6; border-radius: 24px; padding: 28px; }
+  header p.kicker { margin: 0; font-size: 12px; letter-spacing: .04em; color: #d7c49a; }
+  h1 { margin: 8px 0 0; font-size: 32px; font-weight: 650; }
+  header .lead { margin: 12px 0 0; max-width: 46rem; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.82); }
+  header a { color: #d7c49a; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tabs a {
+    border: 1px solid #c9d0c4; background: #fff; color: #173528; border-radius: 999px;
+    padding: 8px 14px; font-family: inherit; font-size: 14px; text-decoration: none;
+  }
+  .tabs a.active { background: #173528; color: #f6f1e6; border-color: #173528; }
+  section { background: rgba(255,255,255,.86); border: 1px solid rgba(29,79,145,.15); border-radius: 18px; padding: 16px 18px; }
+  section p { margin: 0 0 8px; font-size: 15px; line-height: 1.7; }
+  section p:last-child { margin-bottom: 0; }
+  .muted { color: #5e6770; }
+  h2 { margin: 0 0 10px; font-size: 18px; color: #173528; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e6e1d6; }
+  th { color: #5e6770; font-weight: 600; font-size: 12px; }
+  td.ec, th.ec { background: #f3f6f8; }
+  .num { font-variant-numeric: tabular-nums; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">Final eight · same year, two competitions</p>
+    <h1>VNL 2026 and the European Championship</h1>
+    <p class="lead">Women are compared with women, and men with men. Each side is eight matches, from the quarterfinals through the final. There is no European Championship 2025 in this set.</p>
+    <p class="lead"><a href="index.html">Back to the overview</a></p>
+  </header>
+  <nav class="tabs">
+    <a href="index.html#overview">Overview</a>
+    <a href="index.html#duration">Duration</a>
+    <a href="index.html#matches">Matches</a>
+    <a href="index.html#method">How it was calculated</a>
+    <a href="sets.html">By tournament</a>
+    <a class="active" href="compare-2026.html">VNL and EC 2026</a>
+  </nav>
+
+  <section>
+    <p>For the women, mean duration is 6.12 s in the VNL and 6.35 s at the European Championship. Mean actions are 6.80 and 6.68. For the men, duration is 5.08 s and 5.16 s, and actions are 5.45 and 5.39.</p>
+    <p class="muted">The gap between the two competitions is smaller than the spread from match to match. Block contacts are the skill that moves most for the women: 0.76 per rally in the VNL and 0.67 at the European Championship. Among the men, every skill stays within 0.03 per rally. The men’s European Championship correlation of 0.78 comes from the bronze match Slovenia–Finland, where the recorded times line up weakly with the action count. That match is highlighted below.</p>
+  </section>
+
+  <div class="pair" id="summary"></div>
+  <div class="pair" id="bins"></div>
+  <div class="pair" id="skills"></div>
+  <div class="pair" id="matches"></div>
+</div>
+<script>
+const PAIRS = [
+  {
+    title: "Women",
+    ids: ["W26", "WEM"],
+    rows: [
+      ["Rallies", "1,407", "1,354"],
+      ["Duration, mean (s)", "6.12", "6.35"],
+      ["Duration, median (s)", "4", "4"],
+      ["Actions, mean", "6.80", "6.68"],
+      ["Actions, median", "5", "5"],
+      ["Short rallies, 1–4 actions (%)", "33.5", "36.0"],
+      ["Medium rallies, 5–8 (%)", "40.7", "38.8"],
+      ["Long rallies, 9 or more (%)", "25.7", "25.2"],
+      ["Correlation, duration and actions", "0.97", "0.97"],
+      ["Match means, duration (s)", "5.14–6.77", "5.74–7.03"],
+      ["Match means, actions", "5.83–7.38", "6.13–7.15"]
+    ],
+    bins: [[16.8,17.7],[46.3,43.5],[15.1,13.7],[10.5,12.4],[5.5,6.7],[2.3,2.7],[3.5,3.2]],
+    skills: [[1.00,1.00],[0.91,0.89],[1.55,1.54],[1.52,1.53],[0.76,0.67],[0.92,0.92],[0.13,0.13]]
+  },
+  {
+    title: "Men",
+    ids: ["M26", "MEM"],
+    rows: [
+      ["Rallies", "1,444", "1,296"],
+      ["Duration, mean (s)", "5.08", "5.16"],
+      ["Duration, median (s)", "4", "4"],
+      ["Actions, mean", "5.45", "5.39"],
+      ["Actions, median", "5", "5"],
+      ["Short rallies, 1–4 actions (%)", "43.3", "40.1"],
+      ["Medium rallies, 5–8 (%)", "38.9", "42.8"],
+      ["Long rallies, 9 or more (%)", "17.9", "17.1"],
+      ["Correlation, duration and actions", "0.96", "0.78"],
+      ["Match means, duration (s)", "4.00–5.72", "3.92–8.57"],
+      ["Match means, actions", "4.81–5.88", "4.86–5.79"]
+    ],
+    bins: [[26.2,26.2],[44.5,40.0],[12.0,16.5],[10.0,10.6],[3.9,3.8],[1.7,1.9],[1.7,1.1]],
+    skills: [[1.00,1.00],[0.81,0.81],[1.18,1.17],[1.19,1.17],[0.60,0.60],[0.61,0.58],[0.07,0.06]]
+  }
+];
+const BIN_LABELS = ["0–2","3–5","6–8","9–12","13–16","17–20","21+"];
+const SKILL_NAMES = ["Serve","Reception","Set","Attack","Block","Dig","Freeball"];
+function table(headers, rows) {
+  return `<table><thead><tr>${headers.map((h,i)=>`<th class="${i===2?"ec":""}">${h}</th>`).join("")}</tr></thead><tbody>${
+    rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?"num":""} ${i===2?"ec":""}">${c}</td>`).join("")}</tr>`).join("")
+  }</tbody></table>`;
+}
+document.getElementById("summary").innerHTML = PAIRS.map(p =>
+  `<section><h2>${p.title}</h2>${table(["", "VNL 2026", "EC 2026"], p.rows)}</section>`
+).join("");
+document.getElementById("bins").innerHTML = PAIRS.map(p =>
+  `<section><h2>${p.title} · duration bins (%)</h2>${
+    table(["Seconds","VNL 2026","EC 2026"], p.bins.map((b,i)=>[BIN_LABELS[i], b[0].toFixed(1), b[1].toFixed(1)]))
+  }</section>`
+).join("");
+document.getElementById("skills").innerHTML = PAIRS.map(p =>
+  `<section><h2>${p.title} · actions per rally</h2>${
+    table(["Action","VNL 2026","EC 2026"], p.skills.map((b,i)=>[SKILL_NAMES[i], b[0].toFixed(2), b[1].toFixed(2)]))
+  }<p class="muted">Set is the pass to an attacker.</p></section>`
+).join("");
+
+fetch("sets.json").then(r => r.json()).then(data => {
+  const byId = Object.fromEntries(data.groups.map(g => [g.id, g]));
+  document.getElementById("matches").innerHTML = PAIRS.map(p => {
+    const cols = p.ids.map(id => {
+      const g = byId[id];
+      const rows = g.matches.map(m => {
+        const n = m.sets.reduce((a,s)=>a+s.n,0);
+        const dur = m.sets.reduce((a,s)=>a+s.dur,0);
+        const act = m.sets.reduce((a,s)=>a+s.act,0);
+        const weak = /Slovenia–Finland/.test(m.name);
+        return `<tr class="${weak?"warn":""}"><td>${m.name}</td><td class="num">${n}</td><td class="num">${(dur/n).toFixed(2)}</td><td class="num">${(act/n).toFixed(2)}</td></tr>`;
+      }).join("");
+      return `<section><h2>${g.name}</h2><table><thead><tr><th>Match</th><th>Rallies</th><th>Duration (s)</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+    }).join("");
+    return cols;
+  }).join("");
+  const style = document.createElement("style");
+  style.textContent = "tr.warn td { background:#f8efe4; }";
+  document.head.appendChild(style);
+});
+</script>
+</body>
+</html>
